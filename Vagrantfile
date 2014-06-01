@@ -20,13 +20,16 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     #vb.customize ['usbfilter', 'add', '0', '--target', :id, '--name', 'edimax7718un', '--vendorid', '0x7392']
   end
 
-  # Enable provisioning with Puppet stand alone.  Puppet manifests
-  # are contained in a directory path relative to this Vagrantfile.
-  # You will need to create the manifests directory and a manifest in
-  # the file chef/centos-6.5.pp in the manifests_path directory.
+  config.vm.provision "shell", inline: "rpm --replacepkgs -ivh http://yum.puppetlabs.com/el/6/products/x86_64/puppetlabs-release-6-10.noarch.rpm"
+  config.vm.provision "shell", inline: "rpm --replacepkgs -Uvh http://download.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm"
+  config.vm.provision "shell", inline: "yum -y install puppet"
+  config.vm.provision "shell", inline: "puppet module install puppetlabs-mysql"
+
   config.vm.provision "puppet" do |puppet|
     puppet.manifests_path = "manifests"
-    puppet.manifest_file  = "default.pp"
+    puppet.manifest_file = "default.pp"
+    puppet.module_path = "modules"
+    puppet.options = "--verbose --debug"
   end
 
 end

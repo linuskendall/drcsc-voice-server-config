@@ -45,6 +45,10 @@ class freepbx::dependencies {
   package { 'sox':
     ensure => 'installed',
   }
+  package { 'mpg123':
+    ensure => 'installed',
+  }
+ 
   package { 'newt-devel':
     ensure => 'installed',
   }

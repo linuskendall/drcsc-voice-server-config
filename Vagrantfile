@@ -24,6 +24,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.provision "shell", inline: "rpm --replacepkgs -Uvh http://download.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm"
   config.vm.provision "shell", inline: "yum -y install puppet"
   config.vm.provision "shell", inline: "puppet module install puppetlabs-mysql"
+  config.vm.provision "shell", inline: "puppet module install puppetlabs-apache"
+  config.vm.provision "shell", inline: "puppet module install example42-php"
 
   config.vm.provision "puppet" do |puppet|
     puppet.manifests_path = "manifests"

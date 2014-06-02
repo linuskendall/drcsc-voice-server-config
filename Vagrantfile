@@ -8,8 +8,9 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   # Every Vagrant virtual environment requires a box to build off of.
   config.vm.box = "chef/centos-6.5"
 
-  config.vm.network "forwarded_port", guest: 80, host: 8080
-  config.vm.network "forwarded_port", guest: 5060, host: 5060, protocol: 'udp'
+  config.vm.network "private_network", ip: "192.168.50.4"
+  #config.vm.network "forwarded_port", guest: 80, host: 8080
+  #config.vm.network "forwarded_port", guest: 5060, host: 5060, protocol: 'udp'
 
   config.vm.provider "virtualbox" do |vb|
     # Don't boot with headless mode

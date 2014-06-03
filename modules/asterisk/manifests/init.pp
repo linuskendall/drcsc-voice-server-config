@@ -28,12 +28,6 @@ class asterisk {
     install_options => ['--enablerepo=asterisk-11'],
   }
 
-  package {'asterisk-sounds-extra-en':
-    ensure => installed,
-    require => Package['asterisk'],
-    install_options => ['--enablerepo=asterisk-11'],
-  }
-
   package {'asterisk-sounds-extra-en-gsm':
     ensure => installed,
     require => Package['asterisk'],
@@ -55,12 +49,6 @@ class asterisk {
     ensure => present,
     gid => 'asterisk',
     require => Group['asterisk'],
-  }
-
-  file { '/var/lib/asterisk/sounds/digits':
-    ensure => 'link',
-    target => '/usr/share/asterisk/sounds/digits/',
-    require => [ Package['asterisk-sounds-extra-en'], Package['asterisk-sounds-core-en'] ],
   }
 
   file { '/var/run/asterisk':
@@ -89,7 +77,6 @@ class asterisk {
     before => [ Exec['asterisk_start'] ]
   }
 
-
   file { '/var/log/asterisk':
     ensure => directory,
     owner => 'asterisk',
@@ -117,9 +104,18 @@ class asterisk {
     before => [ Exec['asterisk_start'] ]
   }
 
-  file {"/var/lib/asterisk/agi-bin/":
+  file { '/usr/share/asterisk/sounds':
+    ensure => directory,
+    owner => 'asterisk',
+    group => 'asterisk',
+    recurse => true,
+    require => [ Package['asterisk'], User['asterisk'] ],
+    before => [ Exec['asterisk_start'] ]
+  }
+
+  file {"/var/lib/asterisk/agi-bin/googletts.agi":
     ensure => present,
-    source => "puppet:///modules/asterisk/googletts.agi",
+    source => "puppet:///modules/asterisk/drcsc-voice/googletts.agi",
     require => [ Package['asterisk'], User['asterisk'] ],
     notify => Service['asterisk'],
   }
@@ -135,7 +131,7 @@ class asterisk {
 
   file{"/etc/asterisk/extensions_custom.conf":
     ensure => present,
-    source => 'puppet:///modules/asterisk/extensions_custom.conf',
+    source => 'puppet:///modules/asterisk/drcsc-voice/extensions_custom.conf',
     owner => 'asterisk',
     group => 'asterisk',
     require => [ Package['asterisk'], User['asterisk'] ],

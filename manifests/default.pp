@@ -1,4 +1,4 @@
-File { owner => 0, group => 0, mode => 0644 }
+FExecile { owner => 0, group => 0, mode => 0644 }
 Exec { logoutput => true, path => [ "/usr/bin", "/bin", "/sbin", "/usr/sbin"  ] }
 Package { platform => 'x86_64' }
 
@@ -74,7 +74,8 @@ mysql::db { 'asterisk':
   password => $ASTERISK_DB_PW,
   host => 'localhost',
   grant => 'ALL', 
-  sql => '/usr/src/freepbx/SQL/newinstall.sql',
+ # sql => '/usr/src/freepbx/SQL/newinstall.sql',
+ # enforce_sql => true,
   require => Exec['git_repo_freepbx'],
 }
 
@@ -83,7 +84,8 @@ mysql::db { 'asteriskcdrdb':
   password => $ASTERISK_DB_PW,
   host => 'localhost',
   grant => 'ALL', 
-  sql => '/usr/src/freepbx/SQL/cdr_mysql_table.sql',
+ # sql => '/usr/src/freepbx/SQL/cdr_mysql_table.sql',
+ # enforce_sql => true,
   require => Exec['git_repo_freepbx'],
 }
 
@@ -126,11 +128,15 @@ file { '/var/www/html':
   require => [ User['asterisk'], File['/var/www'] ],
 }
 
+## Install perl
+
+class { 'perl': }
+perl::module { 'CGI': }
+perl::module { 'LWP': }
+
 # Set up asterisk
 include asterisk
-
 Class['asterisk'] -> Class['freepbx::dependencies']
-
 
 # Set up freepbx
 $VER_FREEPBX=2.11
@@ -172,11 +178,45 @@ exec {'asterisk_start':
 }
 
 exec {'install_amp':
-  command => "/usr/src/freepbx/install_amp --username=asterisk --password=$ASTERISK_DB_PW --force-overwrite=yes",
+  command => "/usr/src/freepbx/install_amp --installdb --cleaninstall --scripted --force-overwrite --username=asterisk --password=$ASTERISK_DB_PW --asteriskuser=admin --asteriskpass=amp111",
   cwd => '/usr/src/freepbx',
   require => [ Exec['asterisk_start'] , File['/usr/src/freepbx/install_amp'] ]
 }
 
+# Fix some links created by install_amp
+
+file {'/usr/share/asterisk/sounds/':
+  ensure => directory,
+  owner => asterisk,
+  group => asterisk,
+  recurse => true
+}
+
+file {'/var/lib/asterisk/':
+  ensure => directory,
+  owner => asterisk,
+  group => asterisk
+}
+
+exec {'copy_sounds':
+  command => "cp -r /var/lib/asterisk/sounds/* /usr/share/asterisk/sounds/",
+  require => [ Exec['install_amp'], File['/usr/share/asterisk/sounds'], File['/var/lib/asterisk/sounds'] ]
+  before => Exec['amportal']
+}
+
+exec{'delete_sounds':
+  command => "rm -r /var/lib/asterisk/sounds",
+  require => Exec['copy_sounds'],
+  before => Exec['amportal'],
+}
+
+file { '/var/lib/asterisk/sounds':
+  ensure => 'link',
+  target => '/usr/share/asterisk/',
+  require => Exec['delete_sounds'],
+  before => Exec['amportal'],
+}
+   
 file {'/var/log/asterisk/freepbx.log':
   owner => 'asterisk',
   require => [ User['asterisk'], Exec['install_amp'] ],
@@ -186,6 +226,8 @@ exec { 'mohmp3':
   command => 'ln -s /var/lib/asterisk/moh /var/lib/asterisk/mohmp3',
   require => Exec['install_amp']
 }
+
+# Finally boot up freepbx
 
 exec { 'amportal':
   command => "amportal start",

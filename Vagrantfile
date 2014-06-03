@@ -29,12 +29,13 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.provision "shell", inline: "puppet module install puppetlabs-apache"
   config.vm.provision "shell", inline: "puppet module install example42-php"
   config.vm.provision "shell", inline: "puppet module install example42-perl"
+  config.vm.provision "shell", inline: "puppet module install maestrodev-wget"
 
   config.vm.provision "puppet" do |puppet|
     puppet.manifests_path = "manifests"
     puppet.manifest_file = "default.pp"
     puppet.module_path = "modules"
-    puppet.options = "--verbose --debug"
+    #puppet.options = "--verbose --debug"
   end
 
 end

@@ -1,3 +1,6 @@
 [submodule "modules/git"]
 	path = modules/git
 	url = git://github.com/nesi/puppet-git.git
+[submodule "modules/asterisk/files/drcsc-voice"]
+	path = modules/asterisk/files/drcsc-voice
+	url = git://github.com/linuskendall/drcsc-voice.git
